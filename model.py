@@ -7,7 +7,7 @@ class EncoderCNN(nn.Module):
     def __init__(self):
         super(EncoderCNN, self).__init__()
         self.resnet = models.resnet50(pretrained=True)
-        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, Constants.embed_size)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, Hyper.embed_size)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(Hyper.dropout_rate)  # Consider other regulisers
 
@@ -26,9 +26,9 @@ class EncoderCNN(nn.Module):
 class DecoderRNN(nn.Module):
     def __init__(self):
         super(DecoderRNN, self).__init__()
-        self.embed = nn.Embedding(Constants.vocab_size, Constants.embed_size)
-        self.lstm = nn.LSTM(Constants.embed_size, Constants.hidden_size, Constants.num_layers)
-        self.linear = nn.Linear(Constants.hidden_size, Constants.vocab_size)
+        self.embed = nn.Embedding(Constants.vocab_size, Hyper.embed_size)
+        self.lstm = nn.LSTM(Hyper.embed_size, Hyper.hidden_size, Hyper.num_layers)
+        self.linear = nn.Linear(Hyper.hidden_size, Hyper.vocab_size)
         self.dropout = nn.Dropout(Hyper.dropout_rate)
 
     def forward(self, features, captions):
