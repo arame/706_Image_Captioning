@@ -5,6 +5,7 @@ class Hyper:
     learning_rate = 1e-6
     embed_size = 256
     hidden_size = 256
+    num_layers = 1
     batch_size = 2
     dropout_rate = 0.5
 
@@ -26,7 +27,7 @@ class Constants:
     save_model = True
     vocab_from_file = True
     vocab_size = 1000
-    num_layers = 1
+    
     train_CNN = False
     max_length = 50
     word_threshold = 8

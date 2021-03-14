@@ -11,4 +11,3 @@ class Collate:
         targets = pad_sequence(targets, batch_first=False, padding_value = self.pad_idx)
         return imgs, targets
 
-def get_loader()

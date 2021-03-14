@@ -59,7 +59,7 @@ class COCOData(data.Dataset):
         coco_url = path[0]["coco_url"]
         im = np.array(io.imread(coco_url))
         im = self.transform(im)
-        return im, coco_url
+        return im
 
     def load_caption(self, idx):
         caption = self.ann_data[idx]['caption']
@@ -73,21 +73,20 @@ class COCOData(data.Dataset):
 
     # return image + mask 
     def __getitem__(self, idx):
-        img, coco_url = self.load_img(idx)
+        img = self.load_img(idx)
         caption = self.load_caption(idx)
         numericalized_caption = [self.vocab.stoi[Constants.SOS]]
         numericalized_caption += self.vocab.numericalize(caption)
         numericalized_caption.append(self.vocab.stoi[Constants.EOS]) 
-        return img, coco_url, torch.tensor(numericalized_caption)
+        return img, torch.tensor(numericalized_caption)
 
     def test_interface_with_single_image(self, image_id):
         ann_ids = self.coco_interface.loadAnns(image_id)
-        img, coco_url, caption = self[image_id]
+        img, caption = self[image_id]
         self.coco_interface.showAnns(ann_ids)
         image = img.squeeze().permute(1,2,0)
         plt.imshow(image)
         plt.savefig("test.png")
-        print(f"The image retreived can be found at {coco_url}")
         print("Image saved to test.png. The associated caption is: ")
         print(caption)
 

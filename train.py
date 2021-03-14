@@ -10,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 from model import CNNtoRNN
 from config import Hyper, Constants
 from coco_data import COCO, COCOData
+from collate import Collate
 import os
 
 def train():
@@ -25,15 +26,15 @@ def train():
     # selected class ids: extract class id from the annotation
     coco_data_args = {'datalist':ann_ids, 'coco_interface':coco_interface, 'coco_ann_idx':selected_ann_ids, 'stage':'train'}
     coco_data = COCOData(**coco_data_args)
-    #coco_data.test_interface_with_single_image(100)
-    coco_dataloader_args = {'batch_size':1, 'shuffle':True}
+    pad_idx = coco_data.vocab.stoi["<PAD>"]
+    coco_dataloader_args = {'batch_size':1, 'shuffle':True, "collate_fn":Collate(pad_idx=pad_idx)}
     coco_dataloader = data.DataLoader(coco_data, **coco_dataloader_args)
     writer = SummaryWriter("runs/coco")
     step = 0
     # initilze model, loss, etc
-    model = CNNtoRNN()
-    criterion = nn.CrossEntropyLoss()
-    #vocab_size = coco_dataloader.dataset
+    model = CNNtoRNN(coco_data.vocab)
+    criterion = nn.CrossEntropyLoss(ignore_index=coco_data.vocab.stoi["<PAD>"])
+    optimizer = optim.Adam(model.parameters(), lr=Hyper.learning_rate)
     #####################################################################
     #vocab_size = len(coco_dataloader.dataset.voc())
 

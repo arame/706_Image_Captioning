@@ -24,11 +24,12 @@ class EncoderCNN(nn.Module):
         return Constants.train_CNN
 
 class DecoderRNN(nn.Module):
-    def __init__(self):
+    def __init__(self, vocab_size):
         super(DecoderRNN, self).__init__()
+        self.vocab_size = vocab_size
         self.embed = nn.Embedding(Constants.vocab_size, Hyper.embed_size)
         self.lstm = nn.LSTM(Hyper.embed_size, Hyper.hidden_size, Hyper.num_layers)
-        self.linear = nn.Linear(Hyper.hidden_size, Hyper.vocab_size)
+        self.linear = nn.Linear(Hyper.hidden_size, self.vocab_size)
         self.dropout = nn.Dropout(Hyper.dropout_rate)
 
     def forward(self, features, captions):
@@ -39,16 +40,19 @@ class DecoderRNN(nn.Module):
         return outputs
 
 class CNNtoRNN(nn.Module):
-    def __init__(self):
+    def __init__(self, vocabulary):
+        super(CNNtoRNN, self).__init__()
+        self.vocabulary = vocabulary
+        vocab_size = len(vocabulary.itos)
         self.encoderCNN = EncoderCNN()
-        self.decoderRNN = DecoderRNN()
+        self.decoderRNN = DecoderRNN(vocab_size)
 
     def forward(self, images, captions):
         features = self.encoderCNN(images)
         outputs = self.decoderRNN(features, captions)
         return outputs
 
-    def caption_image(self, image, vocabulary):
+    def caption_image(self, image):
         result_caption = []
         with T.no_grad():
             x = self.encoderCNN(image).unsqueeze(0)
@@ -59,8 +63,8 @@ class CNNtoRNN(nn.Module):
                 predicted = output.argmax(1)
                 result_caption.append(predicted.item())
                 x = self.decoderRNN.embed(predicted).unsqueeze(0)
-                if vocabulary.itos[predicted.item()] == "<EOS>":
+                if self.vocabulary.itos[predicted.item()] == "<EOS>":
                     break
-        return [vocabulary.itos[idx] for idx in result_caption]
+        return [self.vocabulary.itos[idx] for idx in result_caption]
 
 
