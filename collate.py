@@ -1,4 +1,5 @@
 from torch.nn.utils.rnn import pad_sequence  # pad batch
+import torch
 
 class Collate:
     def __init__(self, pad_idx):

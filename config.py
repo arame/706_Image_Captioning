@@ -6,7 +6,7 @@ class Hyper:
     embed_size = 256
     hidden_size = 256
     num_layers = 1
-    batch_size = 2
+    batch_size = 1
     dropout_rate = 0.5
 
     [staticmethod]   
@@ -25,16 +25,14 @@ class Constants:
     UNK = "<UNK>"   # Unknown word
     load_model = False
     save_model = True
+    backup_model_path = "../backup/model.pth"
     vocab_from_file = True
     vocab_size = 1000
     
     train_CNN = False
     max_length = 50
     word_threshold = 8
-    data_folder = "../mscoco"
     vocab_file = "../mscoco/vocab.pkl"
     data_folder_ann = "../mscoco/annotations"
-    images_train_file = "instances_train2017.json"
-    images_val_file = "instances_val2017.json"
     captions_train_file = "captions_train2017.json"
     captions_val_file = "captions_val2017.json"

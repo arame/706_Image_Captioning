@@ -5,13 +5,14 @@ import torchvision.transforms as transforms
 import torchvision.datasets as dset
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter
-
-#from utils import save_checkpoint, load_checkpoint, print_examples
+from tqdm import tqdm
+from utils import save_checkpoint, load_checkpoint, print_examples
 from model import CNNtoRNN
 from config import Hyper, Constants
 from coco_data import COCO, COCOData
 from collate import Collate
 import os
+import utils
 
 def train():
     ###################### load COCO interface, the input is a json file with annotations ####################
@@ -27,7 +28,7 @@ def train():
     coco_data_args = {'datalist':ann_ids, 'coco_interface':coco_interface, 'coco_ann_idx':selected_ann_ids, 'stage':'train'}
     coco_data = COCOData(**coco_data_args)
     pad_idx = coco_data.vocab.stoi["<PAD>"]
-    coco_dataloader_args = {'batch_size':1, 'shuffle':True, "collate_fn":Collate(pad_idx=pad_idx)}
+    coco_dataloader_args = {'batch_size':Hyper.batch_size, 'shuffle':True, "collate_fn":Collate(pad_idx=pad_idx), "pin_memory":True}
     coco_dataloader = data.DataLoader(coco_data, **coco_dataloader_args)
     writer = SummaryWriter("runs/coco")
     step = 0
@@ -36,9 +37,42 @@ def train():
     criterion = nn.CrossEntropyLoss(ignore_index=coco_data.vocab.stoi["<PAD>"])
     optimizer = optim.Adam(model.parameters(), lr=Hyper.learning_rate)
     #####################################################################
-    #vocab_size = len(coco_dataloader.dataset.voc())
+    if Constants.load_model:
+        step = load_checkpoint(model, optimizer)
+
+    model.train()   # Set model to training mode
+
+    for epoch in range(Hyper.total_epochs):
+        # Uncomment the line below to see a couple of test cases
+        # print_examples(model, device, dataset)
+
+        print(f"Epoch: {epoch}")
+        if Constants.save_model:
+            checkpoint = {
+                "state_dict": model.state_dict(),
+                "optimizer": optimizer.state_dict(),
+                "step": step,
+            }
+            save_checkpoint(checkpoint)
 
 
+        # tqdm - Decorate an iterable object, 
+        # returning an iterator which acts exactly like the original iterable, 
+        # but prints a dynamically updating progressbar every time a value is requested.
+
+        for _, (imgs, captions) in tqdm(enumerate(coco_dataloader), total=len(coco_dataloader), leave=False):
+            imgs = imgs.to(Constants.device)
+            captions = captions.to(Constants.device)
+
+            outputs = model(imgs, captions[:-1])
+            loss = criterion(outputs.reshape(-1, outputs.shape[2]), captions.reshape(-1))
+
+            writer.add_scalar("Training loss", loss.item(), global_step=step)
+            step += 1
+
+            optimizer.zero_grad()
+            loss.backward(loss)
+            optimizer.step()
 
 if __name__ == "__main__":
     train()

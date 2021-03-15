@@ -1,6 +1,7 @@
-import torch
+import torch as T
 import torchvision.transforms as transforms
 from PIL import Image
+from config import Constants
 
 
 def print_examples(model, device, dataset):
@@ -56,13 +57,14 @@ def print_examples(model, device, dataset):
     model.train()
 
 
-def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
+def save_checkpoint(checkpoint):
     print("=> Saving checkpoint")
-    torch.save(state, filename)
+    T.save(checkpoint, Constants.backup_model_path)
 
 
-def load_checkpoint(checkpoint, model, optimizer):
+def load_checkpoint(model, optimizer):
     print("=> Loading checkpoint")
+    checkpoint = T.load(Constants.backup_model_path)
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
     step = checkpoint["step"]
