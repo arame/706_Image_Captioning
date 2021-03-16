@@ -25,6 +25,7 @@ class Constants:
     UNK = "<UNK>"   # Unknown word
     load_model = False
     save_model = True
+    backup_model_folder = "../backup"
     backup_model_path = "../backup/model.pth"
     vocab_from_file = True
     vocab_size = 1000

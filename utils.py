@@ -1,5 +1,6 @@
 import torch as T
 import torchvision.transforms as transforms
+import os
 from PIL import Image
 from config import Constants
 
@@ -58,6 +59,8 @@ def print_examples(model, device, dataset):
 
 
 def save_checkpoint(checkpoint):
+    if os.path.isdir(Constants.backup_model_folder) == False:
+        os.mkdir(Constants.backup_model_folder)
     print("=> Saving checkpoint")
     T.save(checkpoint, Constants.backup_model_path)
 
