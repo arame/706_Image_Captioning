@@ -4,7 +4,6 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import torchvision.datasets as dset
 from torch.utils import data
-from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from utils import save_checkpoint, load_checkpoint, print_examples
 from model import CNNtoRNN
@@ -30,10 +29,10 @@ def train():
     pad_idx = coco_data.vocab.stoi["<PAD>"]
     coco_dataloader_args = {'batch_size':Hyper.batch_size, 'shuffle':True, "collate_fn":Collate(pad_idx=pad_idx), "pin_memory":True}
     coco_dataloader = data.DataLoader(coco_data, **coco_dataloader_args)
-    writer = SummaryWriter("runs/coco")
     step = 0
     # initilze model, loss, etc
     model = CNNtoRNN(coco_data.vocab)
+    model = model.to(Constants.device)
     criterion = nn.CrossEntropyLoss(ignore_index=coco_data.vocab.stoi["<PAD>"])
     optimizer = optim.Adam(model.parameters(), lr=Hyper.learning_rate)
     #####################################################################
@@ -43,10 +42,7 @@ def train():
     model.train()   # Set model to training mode
 
     for epoch in range(Hyper.total_epochs):
-        # Uncomment the line below to see a couple of test cases
-        # print_examples(model, device, dataset)
-
-        print(f"Epoch: {epoch}")
+        print(f"Epoch: {epoch + 1}")
         if Constants.save_model:
             checkpoint = {
                 "state_dict": model.state_dict(),
