@@ -34,7 +34,8 @@ class DecoderRNN(nn.Module):
 
     def forward(self, features, captions):
         embeddings = self.dropout(self.embed(captions))
-        embeddings = T.cat((features.unsqueeze(0), embeddings), dim = 0)
+        features1 = features.unsqueeze(0)
+        embeddings = T.cat((features1, embeddings), dim = 0)
         hiddens, _ = self.lstm(embeddings)
         outputs = self.linear(hiddens)
         return outputs

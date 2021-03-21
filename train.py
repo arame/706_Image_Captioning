@@ -14,6 +14,7 @@ import os
 import utils
 
 def train():
+    CUDA_LAUNCH_BLOCKING=1
     ###################### load COCO interface, the input is a json file with annotations ####################
     file_path = os.path.join(Constants.data_folder_ann, Constants.captions_train_file)
     coco_interface = COCO(file_path)
@@ -61,9 +62,11 @@ def train():
             captions = captions.to(Constants.device)
 
             outputs = model(imgs, captions[:-1])
-            loss = criterion(outputs.reshape(-1, outputs.shape[2]), captions.reshape(-1))
+            outputs1 = outputs.reshape(-1, outputs.shape[2])
+            captions1 = captions.reshape(-1)
+            loss = criterion(outputs1, captions1)
 
-            writer.add_scalar("Training loss", loss.item(), global_step=step)
+            print(f"\nTraining loss {loss.item()}, step {step}\n")
             step += 1
 
             optimizer.zero_grad()
