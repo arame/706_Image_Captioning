@@ -11,7 +11,7 @@ from config import Hyper, Constants
 from coco_data import COCO, COCOData
 from collate import Collate
 import os
-import utils
+
 
 def train():
     CUDA_LAUNCH_BLOCKING=1
@@ -52,18 +52,16 @@ def train():
             }
             save_checkpoint(checkpoint)
 
-
-        # tqdm - Decorate an iterable object, 
-        # returning an iterator which acts exactly like the original iterable, 
-        # but prints a dynamically updating progressbar every time a value is requested.
-
         for _, (imgs, captions) in tqdm(enumerate(coco_dataloader), total=len(coco_dataloader), leave=False):
-            imgs = imgs.to(Constants.device)
-            captions = captions.to(Constants.device)
+            print(captions)
+            print(imgs.dtype, "   ", captions.dtype)
+            imgs_ = imgs.to(Constants.device)
+            captions_ = captions.to(Constants.device)
 
-            outputs = model(imgs, captions[:-1])
+            outputs = model(imgs_, captions_[:-1])
             outputs1 = outputs.reshape(-1, outputs.shape[2])
-            captions1 = captions.reshape(-1)
+            captions1 = captions_.reshape(-1)
+            print(outputs1.size(), "    ", captions1)
             loss = criterion(outputs1, captions1)
 
             print(f"\nTraining loss {loss.item()}, step {step}\n")

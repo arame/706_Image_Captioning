@@ -8,7 +8,7 @@ import pickle
 # python -m spacy download en
 # 
 spacy_eng = spacy.load("en")
-
+#spacy_eng = spacy.load("en_core_web_sm")
 class Vocabulary:
     def __init__(self, word_threshold):
         # itos = index to string, stoi = string to index
