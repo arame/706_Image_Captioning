@@ -28,7 +28,6 @@ class Constants:
     backup_model_folder = "../backup"
     backup_model_path = "../backup/model.pth"
     vocab_from_file = True
-    vocab_size = 1000
     
     train_CNN = False
     max_length = 50

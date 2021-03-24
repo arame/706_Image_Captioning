@@ -27,7 +27,7 @@ class DecoderRNN(nn.Module):
     def __init__(self, vocab_size):
         super(DecoderRNN, self).__init__()
         self.vocab_size = vocab_size
-        self.embed = nn.Embedding(Constants.vocab_size, Hyper.embed_size)
+        self.embed = nn.Embedding(self.vocab_size, Hyper.embed_size)
         self.lstm = nn.LSTM(Hyper.embed_size, Hyper.hidden_size, Hyper.num_layers)
         self.linear = nn.Linear(Hyper.hidden_size, self.vocab_size)
         self.dropout = nn.Dropout(Hyper.dropout_rate)

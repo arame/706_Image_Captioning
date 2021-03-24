@@ -11,7 +11,9 @@ import pycocotools
 from pycocotools.coco import COCO
 import skimage.io as io
 from config import Constants, Hyper
+from none_transform import NoneTransform
 from vocabulary import Vocabulary
+
 
 # dataset interface takes the ids of the COCO classes
 class COCOData(data.Dataset):
@@ -36,30 +38,39 @@ class COCOData(data.Dataset):
 
     # this method normalizes the image and converts it to Pytorch tensor
     # Here we use pytorch transforms functionality, and Compose them together,
-    def transform(self, img):
+    def transform(self, img, is_grayscale):
         # these mean values are for RGB!!
         t_ = transforms.Compose([
                             transforms.ToPILImage(),
                             transforms.ToTensor(),
+                            transforms.Lambda(lambda x: x.repeat(3, 1, 1)) if is_grayscale else NoneTransform()
                             #transforms.Normalize(mean=[0.485, 0.457, 0.407],
                             #                     std=[1,1,1])
                             ])
-
 
         img = t_(img)
         # need this for the input in the model
         # returns image tensor (CxHxW)
         return img
 
-    # downloadthe image 
+    # download the image
     # return rgb image
     def load_img(self, idx): 
         img_id = self.ann_data[idx]["image_id"]  
         path = self.coco_interface.loadImgs(img_id)   
         coco_url = path[0]["coco_url"]
-        im = np.array(io.imread(coco_url))
-        im = self.transform(im)
+        img = io.imread(coco_url)
+        is_grayscale = self.check_if_grayscale(img)
+        im = np.array(img)
+        im = self.transform(im, is_grayscale)
         return im
+
+    def check_if_grayscale(self, img):
+        if len(img.shape) == 3:
+            if img.shape[2] == 3:
+                return False
+
+        return True
 
     def load_caption(self, idx):
         caption = self.ann_data[idx]['caption']

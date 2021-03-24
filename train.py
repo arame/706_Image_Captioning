@@ -52,20 +52,13 @@ def train():
             save_checkpoint(checkpoint)
 
         for _, (imgs, captions) in tqdm(enumerate(coco_dataloader), total=len(coco_dataloader), leave=False):
-            print(captions)
-            print(imgs.dtype, "   ", captions.dtype)
-            imgs_ = imgs.to(Constants.device)
-            captions_ = captions.to(Constants.device)
-
-            outputs = model(imgs_, captions_[:-1])
-            outputs1 = outputs.reshape(-1, outputs.shape[2])
-            captions1 = captions_.reshape(-1)
-            print(outputs1.size(), "    ", captions1)
+            imgs = imgs.to(Constants.device)
+            captions = captions.to(Constants.device)
+            outputs = model(imgs, captions[:-1])
+            vocab_size = outputs.shape[2]
+            outputs1 = outputs.reshape(-1, vocab_size)
+            captions1 = captions.reshape(-1)
             loss = criterion(outputs1, captions1)
-
-            print(f"\nTraining loss {loss.item()}, step {step}\n")
-            step += 1
-
             optimizer.zero_grad()
             loss.backward(loss)
             optimizer.step()
