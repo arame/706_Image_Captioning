@@ -3,7 +3,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from train import train
 from config import Hyper, Constants
-
+CUDA_LAUNCH_BLOCKING=1
 
 # It all starts here
 def main():

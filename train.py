@@ -11,10 +11,9 @@ from config import Hyper, Constants
 from coco_data import COCO, COCOData
 from collate import Collate
 import os
-
+CUDA_LAUNCH_BLOCKING=1
 
 def train():
-    CUDA_LAUNCH_BLOCKING=1
     ###################### load COCO interface, the input is a json file with annotations ####################
     file_path = os.path.join(Constants.data_folder_ann, Constants.captions_train_file)
     coco_interface = COCO(file_path)
