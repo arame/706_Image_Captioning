@@ -1,7 +1,7 @@
 import torch as T
 
 class Hyper:
-    total_epochs = 100
+    total_epochs = 1
     learning_rate = 1e-6
     embed_size = 256
     hidden_size = 256

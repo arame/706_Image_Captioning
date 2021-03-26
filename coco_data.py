@@ -43,11 +43,9 @@ class COCOData(data.Dataset):
         t_ = transforms.Compose([
                             transforms.ToPILImage(),
                             transforms.ToTensor(),
-                            transforms.Lambda(lambda x: x.repeat(3, 1, 1)) if is_grayscale else NoneTransform()
-                            #transforms.Normalize(mean=[0.485, 0.457, 0.407],
-                            #                     std=[1,1,1])
+                            transforms.Lambda(lambda x: x.repeat(3, 1, 1)) if is_grayscale else NoneTransform(),
+                            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                             ])
-
         img = t_(img)
         # need this for the input in the model
         # returns image tensor (CxHxW)
@@ -66,6 +64,8 @@ class COCOData(data.Dataset):
         return im
 
     def check_if_grayscale(self, img):
+        # Gayscale images have 2 dimensions only
+        # RGB images have 3 dimensions and the third dimension is 3
         if len(img.shape) == 3:
             if img.shape[2] == 3:
                 return False
@@ -76,11 +76,9 @@ class COCOData(data.Dataset):
         caption = self.ann_data[idx]['caption']
         return caption
 
-   
     # number of images
     def __len__(self):
         return len(self.datalist)
-
 
     # return image + mask 
     def __getitem__(self, idx):

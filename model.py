@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision.models as models
 from config import Hyper, Constants
 
+
 class EncoderCNN(nn.Module):
     def __init__(self):
         super(EncoderCNN, self).__init__()
@@ -23,6 +24,7 @@ class EncoderCNN(nn.Module):
 
         return Constants.train_CNN
 
+
 class DecoderRNN(nn.Module):
     def __init__(self, vocab_size):
         super(DecoderRNN, self).__init__()
@@ -35,10 +37,11 @@ class DecoderRNN(nn.Module):
     def forward(self, features, captions):
         embeddings = self.dropout(self.embed(captions))
         features1 = features.unsqueeze(0)
-        embeddings = T.cat((features1, embeddings), dim = 0)
+        embeddings = T.cat((features1, embeddings), dim=0)
         hiddens, _ = self.lstm(embeddings)
         outputs = self.linear(hiddens)
         return outputs
+
 
 class CNNtoRNN(nn.Module):
     def __init__(self, vocabulary):
@@ -64,7 +67,7 @@ class CNNtoRNN(nn.Module):
                 predicted = output.argmax(1)
                 result_caption.append(predicted.item())
                 x = self.decoderRNN.embed(predicted).unsqueeze(0)
-                if self.vocabulary.itos[predicted.item()] == "<EOS>":
+                if self.vocabulary.itos[predicted.item()] == Constants.EOS:
                     break
         return [self.vocabulary.itos[idx] for idx in result_caption]
 
