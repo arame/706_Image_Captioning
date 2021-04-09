@@ -44,7 +44,7 @@ def train():
             }
             save_checkpoint(checkpoint)
 
-        save_checkpoint_epoch(checkpoint, epoch)
+        
         for _, (imgs, captions) in tqdm(enumerate(coco_dataloader_train), total=len(coco_dataloader_train), leave=False):
             imgs = imgs.to(Constants.device)
             captions = captions.to(Constants.device)
@@ -57,10 +57,10 @@ def train():
             loss.backward(loss)
             optimizer.step()
 
+        save_checkpoint_epoch(checkpoint, epoch)
         # One epoch's validation
         recent_bleu4 = validate(val_loader=coco_dataloader_val,
-                                encoder=model.encoderCNN,
-                                decoder=model.decoderRNN,
+                                model=model,
                                 criterion=criterion)
 
         # Check if there was an improvement
@@ -108,18 +108,19 @@ def train_with_epoch(start_epoch):
     criterion = nn.CrossEntropyLoss(ignore_index=coco_data_train.vocab.stoi[Constants.PAD])
     optimizer = optim.Adam(model.parameters(), lr=Hyper.learning_rate)
     #####################################################################
-    if Constants.load_model:
-        step = load_checkpoint(model, optimizer)
+    step = load_checkpoint_epoch(model, optimizer, start_epoch)
 
-    model.train()   # Set model to training mode
+    model.eval()   # Set model to validation mode
     recent_bleu4 = validate(val_loader=coco_dataloader_val,
-                                encoder=model.encoderCNN,
-                                decoder=model.decoderRNN,
+                                model=model,
                                 criterion=criterion)
 
     if start_epoch >= Hyper.total_epochs:
         return # Validated the last epoch
 
+    model.train()   # Set model to training mode
+    model.decoderRNN.train()
+    model.encoderCNN.train()
     for i in range(start_epoch, Hyper.total_epochs):
         epoch = i + 1
         print(f"Epoch: {epoch}")
@@ -146,8 +147,7 @@ def train_with_epoch(start_epoch):
         save_checkpoint_epoch(checkpoint, epoch)
         # One epoch's validation
         recent_bleu4 = validate(val_loader=coco_dataloader_val,
-                                encoder=model.encoderCNN,
-                                decoder=model.decoderRNN,
+                                model=model,
                                 criterion=criterion)
         # Check if there was an improvement
         is_best = recent_bleu4 > best_bleu4
@@ -159,7 +159,9 @@ def train_with_epoch(start_epoch):
             epochs_since_improvement = 0
 
 if __name__ == "__main__":
-    train()
+    #train()
 
     ''' Use this method if you want to go straight to the validation and continue from the last saved epoch'''
-    #train_with_epoch(1)
+    curr_epoch = 1
+    Hyper.total_epochs = curr_epoch + 1
+    train_with_epoch(curr_epoch)
