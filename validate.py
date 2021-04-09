@@ -1,69 +1,75 @@
 import torch as T
 import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-import torchvision.datasets as dset
-from torch.utils import data
-from tqdm import tqdm
-from model import CNNtoRNN
+import time
+from average_meter import AverageMeter
 from config import Hyper, Constants
-from coco_data import COCO, COCOData
-from collate import Collate
-import os
-from utils import utils
+from nltk.translate.bleu_score import corpus_bleu
 
+def validate(val_loader, encoder, decoder, criterion):
+    decoder.eval()  # eval mode (no dropout or batchnorm)
+    encoder.eval()
+    batch_time = AverageMeter()
+    losses = AverageMeter()
+    top5accs = AverageMeter()
 
-def validate():
-    CUDA_LAUNCH_BLOCKING=1
-    ###################### load COCO interface, the input is a json file with annotations ####################
-    file_path = os.path.join(Constants.data_folder_ann, Constants.captions_val_file)
-    coco_interface = COCO(file_path)
-    selected_ann_ids = coco_interface.getAnnIds()
-    ####################################################################
-    # load ids of images
-    # Dataset class takes this list as an input and creates data objects 
-    ann_ids = coco_interface.getAnnIds(imgIds=selected_ann_ids)
-    ####################################################################
-    # selected class ids: extract class id from the annotation
-    coco_data_args = {'datalist':ann_ids, 'coco_interface':coco_interface, 'coco_ann_idx':selected_ann_ids, 'stage':'val'}
-    coco_data = COCOData(**coco_data_args)
-    pad_idx = coco_data.vocab.stoi[Constants.PAD]
-    coco_dataloader_args = {'batch_size':Hyper.batch_size, 'shuffle':True, "collate_fn":Collate(pad_idx=pad_idx), "pin_memory":True}
-    coco_dataloader = data.DataLoader(coco_data, **coco_dataloader_args)
-    step = 0
-    # initilze model, loss, etc
-    model = CNNtoRNN(coco_data.vocab)
-    model = model.to(Constants.device)
-    criterion = nn.CrossEntropyLoss(ignore_index=coco_data.vocab.stoi[Constants.PAD])
-    #####################################################################
-    if Constants.load_model:
-        step = load_checkpoint(model, optimizer)
+    start = time.time()
 
-    model.eval()   # Set model to validation mode
+    references = list()  # references (true captions) for calculating BLEU-4 score
+    hypotheses = list()  # hypotheses (predictions)
 
-    for epoch in range(Hyper.total_epochs):
-        print(f"Epoch: {epoch + 1}")
-        if Constants.save_model:
-            checkpoint = {
-                "state_dict": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "step": step,
-            }
-            save_checkpoint(checkpoint)
+    with T.no_grad():
+        # Batches
+        i = 0
+        for _, (imgs, captions) in enumerate(val_loader):
+            i += 1
+            # Move to device, if available
+            imgs = imgs.to(Constants.device)
+            captions = captions.to(Constants.device)
 
-        for _, (imgs, captions) in tqdm(enumerate(coco_dataloader), total=len(coco_dataloader), leave=False):
-            print(captions)
-            print(imgs.dtype, "   ", captions.dtype)
-            imgs_ = imgs.to(Constants.device)
-            captions_ = captions.to(Constants.device)
-
-            outputs = model(imgs_, captions_[:-1])
-            outputs1 = outputs.reshape(-1, outputs.shape[2])
-            captions1 = captions_.reshape(-1)
-            print(outputs1.size(), "    ", captions1)
-            # TODO - consider accuracy metrics
+            # Forward prop.
+            features = encoder(imgs)
+            outputs = decoder(features, captions)
+            vocab_size = outputs.shape[2]
+            outputs1 = outputs.reshape(-1, vocab_size)
+            captions1 = captions.reshape(-1)
             loss = criterion(outputs1, captions1)
-            step += 1
 
-if __name__ == "__main__":
-    train()
+            # Keep track of metrics
+            losses.update(loss.item(), len(captions1))
+            top5 = accuracy(outputs1, captions1, 5)
+            top5accs.update(top5, len(captions1))
+            batch_time.update(time.time() - start)
+
+            start = time.time()
+
+            if i % Hyper.print_freq == 0:
+                print('Validation: [{0}/{1}]\t'
+                      'Batch Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                      'Top-5 Accuracy {top5.val:.3f} ({top5.avg:.3f})\t'.format(i, len(val_loader), batch_time=batch_time,
+                                                                                loss=losses, top5=top5accs))
+
+            # Store references (true captions), and hypothesis (prediction) for each image
+
+
+        # Calculate BLEU-4 scores
+        bleu4 = corpus_bleu(references, hypotheses)
+
+        print(f'\n * LOSS - {losses.avg}, TOP-5 ACCURACY - {top5accs.avg}, BLEU-4 - {bleu4}\n')
+
+    return bleu4
+
+def accuracy(scores, targets, k):
+    """
+    Computes top-k accuracy, from predicted and true labels.
+    :param scores: scores from the model
+    :param targets: true labels
+    :param k: k in top-k accuracy
+    :return: top-k accuracy
+    """
+
+    batch_size = targets.size(0)
+    _, ind = scores.topk(k, 1, True, True)
+    correct = ind.eq(targets.view(-1, 1).expand_as(ind))
+    correct_total = correct.view(-1).float().sum()  # 0D tensor
+    return correct_total.item() * (100.0 / batch_size)
