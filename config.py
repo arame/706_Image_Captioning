@@ -8,14 +8,20 @@ class Hyper:
     num_layers = 1
     batch_size = 1
     dropout_rate = 0.5
+    selected_category_names = ['person']
 
     [staticmethod]   
     def display():
         print("The Hyperparameters")
         print("-------------------")
-        print(f"NUmber of epochs = {Hyper.total_epochs}")
-        print(f"learning rate = {Hyper.learning_rate}")
-        print(f"batch_size = {Hyper.batch_size}")
+        i = 0
+        for name in Hyper.selected_category_names:
+            i += 1
+            print(f"{i}: Selected category = {name}")
+
+        print(f"Number of epochs = {Hyper.total_epochs}")
+        print(f"Learning rate = {Hyper.learning_rate}")
+        print(f"Batch_size = {Hyper.batch_size}")
 
 class Constants:
     device = T.device("cuda" if T.cuda.is_available() else "cpu")
@@ -36,3 +42,5 @@ class Constants:
     data_folder_ann = "../mscoco/annotations"
     captions_train_file = "captions_train2017.json"
     captions_val_file = "captions_val2017.json"
+    instances_train_file = "instances_train2017.json"
+    instances_val_file = "instances_val2017.json"

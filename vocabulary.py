@@ -5,10 +5,9 @@ import os
 import pickle
 
 # For this line to work, download with the following command in admin mode: 
-# python -m spacy download en
+# python3 -m spacy download en_core_web_sm
 # 
-spacy_eng = spacy.load("en")
-#spacy_eng = spacy.load("en_core_web_sm")
+spacy_eng = spacy.load("en_core_web_sm")
 class Vocabulary:
     def __init__(self, word_threshold):
         # itos = index to string, stoi = string to index

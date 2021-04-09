@@ -10,6 +10,7 @@ from config import Hyper, Constants
 from coco_data import COCO, COCOData
 from collate import Collate
 import os
+from utils import utils
 
 
 def validate():

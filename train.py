@@ -16,15 +16,18 @@ CUDA_LAUNCH_BLOCKING=1
 def train():
     ###################### load COCO interface, the input is a json file with annotations ####################
     file_path = os.path.join(Constants.data_folder_ann, Constants.captions_train_file)
-    coco_interface = COCO(file_path)
-    selected_ann_ids = coco_interface.getAnnIds()
+    coco_interface_cap = COCO(file_path)
+    file_path = os.path.join(Constants.data_folder_ann, Constants.instances_train_file)
+    coco_interface_inst = COCO(file_path)
+    selected_cat_ids = coco_interface_inst.getCatIds(catNms=Hyper.selected_category_names)
+    selected_ann_ids = coco_interface_inst.getAnnIds(catIds=selected_cat_ids)
     ####################################################################
     # load ids of images
     # Dataset class takes this list as an input and creates data objects 
-    ann_ids = coco_interface.getAnnIds(imgIds=selected_ann_ids)
+    ann_ids = coco_interface_cap.getAnnIds(imgIds=selected_ann_ids)
     ####################################################################
     # selected class ids: extract class id from the annotation
-    coco_data_args = {'datalist':ann_ids, 'coco_interface':coco_interface, 'coco_ann_idx':selected_ann_ids, 'stage':'train'}
+    coco_data_args = {'datalist':ann_ids, 'coco_interface':coco_interface_cap, 'coco_ann_idx':selected_ann_ids, 'stage':'train'}
     coco_data = COCOData(**coco_data_args)
     pad_idx = coco_data.vocab.stoi[Constants.PAD]
     coco_dataloader_args = {'batch_size':Hyper.batch_size, 'shuffle':True, "collate_fn":Collate(pad_idx=pad_idx), "pin_memory":True}
