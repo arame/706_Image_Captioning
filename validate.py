@@ -5,9 +5,9 @@ from average_meter import AverageMeter
 from config import Hyper, Constants
 from nltk.translate.bleu_score import corpus_bleu
 
-def validate(val_loader, encoder, decoder, criterion):
-    decoder.eval()  # eval mode (no dropout or batchnorm)
-    encoder.eval()
+def validate(val_loader, model, criterion):
+    model.decoderRNN.eval()  # eval mode (no dropout or batchnorm)
+    model.encoderCNN.eval()
     batch_time = AverageMeter()
     losses = AverageMeter()
     top5accs = AverageMeter()
@@ -25,10 +25,8 @@ def validate(val_loader, encoder, decoder, criterion):
             # Move to device, if available
             imgs = imgs.to(Constants.device)
             captions = captions.to(Constants.device)
-
             # Forward prop.
-            features = encoder(imgs)
-            outputs = decoder(features, captions)
+            outputs = model(imgs, captions[:-1])
             vocab_size = outputs.shape[2]
             outputs1 = outputs.reshape(-1, vocab_size)
             captions1 = captions.reshape(-1)
@@ -50,7 +48,10 @@ def validate(val_loader, encoder, decoder, criterion):
                                                                                 loss=losses, top5=top5accs))
 
             # Store references (true captions), and hypothesis (prediction) for each image
-
+            reference = get_sentence(captions1, model)
+            references.append(reference)
+            prediction = get_hypothesis(outputs1, model)
+            hypotheses.append(prediction)
 
         # Calculate BLEU-4 scores
         bleu4 = corpus_bleu(references, hypotheses)
@@ -58,6 +59,23 @@ def validate(val_loader, encoder, decoder, criterion):
         print(f'\n * LOSS - {losses.avg}, TOP-5 ACCURACY - {top5accs.avg}, BLEU-4 - {bleu4}\n')
 
     return bleu4
+
+def get_sentence(sentence_word_id, model):
+    result_caption = []
+    vocabulary = model.vocabulary
+    for word_id in sentence_word_id:
+        token = vocabulary.itos[word_id.item()]
+        if token == Constants.SOS:
+            continue
+        if token == Constants.EOS:
+            break
+        result_caption.append(token)
+    return result_caption
+
+def get_hypothesis(outputs, model):
+    _, preds = T.max(outputs, dim=1)
+    result_caption = get_sentence(preds, model)
+    return result_caption
 
 def accuracy(scores, targets, k):
     """
