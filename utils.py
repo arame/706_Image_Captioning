@@ -64,10 +64,26 @@ def save_checkpoint(checkpoint):
     print("=> Saving checkpoint")
     T.save(checkpoint, Constants.backup_model_path)
 
+def save_checkpoint_epoch(checkpoint, epoch):
+    suffix = f"_epoch_{epoch}"
+    epoch_path = Constants.backup_model_path + suffix
+    if os.path.isdir(Constants.backup_model_folder) == False:
+        os.mkdir(Constants.backup_model_folder)
+    print(f"=> Saving checkpoint for epoch {epoch}")
+    T.save(checkpoint, epoch_path)
 
 def load_checkpoint(model, optimizer):
     print("=> Loading checkpoint")
     checkpoint = T.load(Constants.backup_model_path)
+    model.load_state_dict(checkpoint["state_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
+    step = checkpoint["step"]
+    return step
+
+def load_checkpoint_epoch(model, optimizer, epoch):
+    suffix = f"_epoch_{epoch}"
+    epoch_path = Constants.backup_model_path + suffix
+    checkpoint = T.load(epoch_path)
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
     step = checkpoint["step"]

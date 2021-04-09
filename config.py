@@ -8,7 +8,11 @@ class Hyper:
     num_layers = 1
     batch_size = 1
     dropout_rate = 0.5
-    selected_category_names = ['bicycle']
+    is_grayscale = True
+    print_freq = 100  # print training/validation stats every __ batches
+    #selected_category_names = ['bicycle']
+    #selected_category_names = ['horse']
+    selected_category_names = ["train"]
     # See the file in the references folder for a list of categories used in Coco
 
     [staticmethod]   
@@ -23,6 +27,7 @@ class Hyper:
         print(f"Number of epochs = {Hyper.total_epochs}")
         print(f"Learning rate = {Hyper.learning_rate}")
         print(f"Batch_size = {Hyper.batch_size}")
+        print(f"Is grayscale = {Hyper.is_grayscale}")
 
 class Constants:
     device = T.device("cuda" if T.cuda.is_available() else "cpu")

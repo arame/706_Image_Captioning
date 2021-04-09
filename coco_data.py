@@ -40,12 +40,21 @@ class COCOData(data.Dataset):
     # Here we use pytorch transforms functionality, and Compose them together,
     def transform(self, img, is_grayscale):
         # these mean values are for RGB!!
-        t_ = transforms.Compose([
-                            transforms.ToPILImage(),
-                            transforms.ToTensor(),
-                            transforms.Lambda(lambda x: x.repeat(3, 1, 1)) if is_grayscale else NoneTransform(),
-                            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-                            ])
+        t_ = None
+        if Hyper.is_grayscale:
+            t_ = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.ToTensor(),
+                transforms.Lambda(lambda x: x.repeat(3, 1, 1)) if is_grayscale else NoneTransform(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+                ])
+        else:
+            t_ = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.ToTensor(),
+                transforms.Grayscale(num_output_channels=1),
+                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 5])
+                ])
         img = t_(img)
         # need this for the input in the model
         # returns image tensor (CxHxW)
