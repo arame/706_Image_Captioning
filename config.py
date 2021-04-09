@@ -8,7 +8,8 @@ class Hyper:
     num_layers = 1
     batch_size = 1
     dropout_rate = 0.5
-    selected_category_names = ['person']
+    selected_category_names = ['bicycle']
+    # See the file in the references folder for a list of categories used in Coco
 
     [staticmethod]   
     def display():

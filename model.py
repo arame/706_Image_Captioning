@@ -7,7 +7,7 @@ from config import Hyper, Constants
 class EncoderCNN(nn.Module):
     def __init__(self):
         super(EncoderCNN, self).__init__()
-        self.resnet = models.resnet50(pretrained=True)
+        self.resnet = models.resnet18(pretrained=True)
         self.resnet.fc = nn.Linear(self.resnet.fc.in_features, Hyper.embed_size)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(Hyper.dropout_rate)  # Consider other regulisers
