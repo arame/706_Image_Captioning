@@ -32,9 +32,12 @@ def train():
     if Constants.load_model:
         step = load_checkpoint(model, optimizer)
 
-    model.train()   # Set model to training mode
+    
 
     for i in range(Hyper.total_epochs):
+        model.train()   # Set model to training mode
+        model.decoderRNN.train()
+        model.encoderCNN.train()
         epoch = i + 1
         print(f"Epoch: {epoch}")
         if Constants.save_model:
@@ -120,10 +123,11 @@ def train_with_epoch(start_epoch):
     if start_epoch >= Hyper.total_epochs:
         return # Validated the last epoch
 
-    model.train()   # Set model to training mode
-    model.decoderRNN.train()
-    model.encoderCNN.train()
+    
     for i in range(start_epoch, Hyper.total_epochs):
+        model.train()   # Set model to training mode
+        model.decoderRNN.train()
+        model.encoderCNN.train()
         epoch = i + 1
         print(f"Epoch: {epoch}")
         if Constants.save_model:
