@@ -1,7 +1,7 @@
 import torch as T
 
 class Hyper:
-    total_epochs = 5
+    total_epochs = 2
     learning_rate = 1e-6
     embed_size = 256
     hidden_size = 256
@@ -12,17 +12,16 @@ class Hyper:
     print_freq = 100  # print training/validation stats every __ batches
     #selected_category_names = ['bicycle']
     #selected_category_names = ['horse']
-    selected_category_names = ["train"]
-    # See the file in the references folder for a list of categories used in Coco
+    #selected_category_names = ["train"]
+    selected_category_names = ["person"]
+    # See the file in the references folder for a list of categories used in Coco. Not all categories have images.
 
     [staticmethod]   
     def display():
         print("The Hyperparameters")
         print("-------------------")
-        i = 0
-        for name in Hyper.selected_category_names:
-            i += 1
-            print(f"{i}: Selected category = {name}")
+        categories = ", ".join(Hyper.selected_category_names)
+        print(f"Selected category = {categories}")
 
         print(f"Number of epochs = {Hyper.total_epochs}")
         print(f"Learning rate = {Hyper.learning_rate}")

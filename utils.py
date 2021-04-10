@@ -2,7 +2,7 @@ import torch as T
 import torchvision.transforms as transforms
 import os
 from PIL import Image
-from config import Constants
+from config import Constants, Hyper
 
 
 def print_examples(model, device, dataset):
@@ -65,7 +65,8 @@ def save_checkpoint(checkpoint):
     T.save(checkpoint, Constants.backup_model_path)
 
 def save_checkpoint_epoch(checkpoint, epoch):
-    suffix = f"_epoch_{epoch}"
+    categories = "_".join(Hyper.selected_category_names)
+    suffix = f"_{categories}_epoch_{epoch}"
     epoch_path = Constants.backup_model_path + suffix
     if os.path.isdir(Constants.backup_model_folder) == False:
         os.mkdir(Constants.backup_model_folder)
