@@ -22,6 +22,7 @@ def train():
     file_path_inst = os.path.join(Constants.data_folder_ann, Constants.instances_val_file)
     coco_dataloader_val, coco_data_val = get_dataloader(file_path_cap, file_path_inst, "val")
     step = 0
+    best_bleu4 = 0
     # initilze model, loss, etc
     model = CNNtoRNN(coco_data_train.vocab)
     model = model.to(Constants.device)
@@ -102,6 +103,7 @@ def train_with_epoch(start_epoch):
     file_path_inst = os.path.join(Constants.data_folder_ann, Constants.instances_val_file)
     coco_dataloader_val, coco_data_val = get_dataloader(file_path_cap, file_path_inst, "val")
     step = 0
+    best_bleu4 = 0
     # initilze model, loss, etc
     model = CNNtoRNN(coco_data_train.vocab)
     model = model.to(Constants.device)
