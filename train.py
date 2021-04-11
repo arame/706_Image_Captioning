@@ -37,6 +37,7 @@ def train():
         model.decoderRNN.train()
         model.encoderCNN.train()
         epoch = i + 1
+        epochs_since_improvement = 0
         print(f"Epoch: {epoch}")
         if Constants.save_model:
             checkpoint = {
