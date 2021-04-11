@@ -5,6 +5,8 @@ from average_meter import AverageMeter
 from config import Hyper, Constants
 from nltk.translate.bleu_score import corpus_bleu
 
+# Code adapted from https://github.com/sgrvinod/a-PyTorch-Tutorial-to-Image-Captioning/blob/master/train.py
+
 def validate(val_loader, model, criterion):
     model.decoderRNN.eval()  # eval mode (no dropout or batchnorm)
     model.encoderCNN.eval()
