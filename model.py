@@ -1,4 +1,5 @@
 import torch as T
+import torch.nn.functional as F
 import torch.nn as nn
 import torchvision.models as models
 from config import Hyper, Constants
@@ -40,6 +41,7 @@ class DecoderRNN(nn.Module):
         embeddings = T.cat((features1, embeddings), dim=0)
         hiddens, _ = self.lstm(embeddings)
         outputs = self.linear(hiddens)
+        #prob_outputs = F.softmax(outputs)
         return outputs
 
 

@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as dset
 from torch.utils import data
 from tqdm import tqdm
-from utils import save_checkpoint, save_checkpoint_epoch, load_checkpoint, load_checkpoint_epoch, print_examples
+from utils import save_checkpoint, save_checkpoint_epoch, load_checkpoint, load_checkpoint_epoch
 from model import CNNtoRNN
 from config import Hyper, Constants
 from coco_data import COCO, COCOData
