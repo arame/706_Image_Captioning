@@ -32,8 +32,6 @@ def train():
     if Constants.load_model:
         step = load_checkpoint(model, optimizer)
 
-    
-
     for i in range(Hyper.total_epochs):
         model.train()   # Set model to training mode
         model.decoderRNN.train()
@@ -48,11 +46,10 @@ def train():
             }
             save_checkpoint(checkpoint)
 
-        
         for _, (imgs, captions) in tqdm(enumerate(coco_dataloader_train), total=len(coco_dataloader_train), leave=False):
             imgs = imgs.to(Constants.device)
             captions = captions.to(Constants.device)
-            outputs = model(imgs, captions[:-1])
+            outputs = model(imgs, captions[:-1])    # forward pass
             vocab_size = outputs.shape[2]
             outputs1 = outputs.reshape(-1, vocab_size)
             captions1 = captions.reshape(-1)
@@ -98,6 +95,8 @@ def get_dataloader(file_path_cap, file_path_inst, stage):
     coco_dataloader = data.DataLoader(coco_data, **coco_dataloader_args)
     return coco_dataloader, coco_data
 
+#############################################################################################################################
+# You have a model file saved after running a number of epochs, continue from here
 def train_with_epoch(start_epoch):
     file_path_cap = os.path.join(Constants.data_folder_ann, Constants.captions_train_file)
     file_path_inst = os.path.join(Constants.data_folder_ann, Constants.instances_train_file)
@@ -113,6 +112,8 @@ def train_with_epoch(start_epoch):
     criterion = nn.CrossEntropyLoss(ignore_index=coco_data_train.vocab.stoi[Constants.PAD])
     optimizer = optim.Adam(model.parameters(), lr=Hyper.learning_rate)
     #####################################################################
+    # Load model file here
+    ##
     step = load_checkpoint_epoch(model, optimizer, start_epoch)
 
     model.eval()   # Set model to validation mode
@@ -123,7 +124,6 @@ def train_with_epoch(start_epoch):
     if start_epoch >= Hyper.total_epochs:
         return # Validated the last epoch
 
-    
     for i in range(start_epoch, Hyper.total_epochs):
         model.train()   # Set model to training mode
         model.decoderRNN.train()
@@ -168,6 +168,7 @@ if __name__ == "__main__":
     #train()
 
     ''' Use this method if you want to go straight to the validation and continue from the last saved epoch'''
-    curr_epoch = 1
+    # boat category is RGP, other models are grayscale
+    curr_epoch = 2
     Hyper.total_epochs = curr_epoch + 1
     train_with_epoch(curr_epoch)
