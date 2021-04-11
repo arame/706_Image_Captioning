@@ -65,9 +65,11 @@ class CNNtoRNN(nn.Module):
                 hiddens, states = self.decoderRNN.lstm(x, states)
                 output = self.decoderRNN.linear(hiddens.unsqueeze(0))
                 predicted = output.argmax(1)
-                result_caption.append(predicted.item())
-                x = self.decoderRNN.embed(predicted).unsqueeze(0)
-                if self.vocabulary.itos[predicted.item()] == Constants.EOS:
+                predicted = predicted.view(-1)
+                pred = predicted[0].item()
+                result_caption.append(pred)
+                x = self.decoderRNN.embed(predicted)
+                if self.vocabulary.itos[pred] == Constants.EOS:
                     break
         return [self.vocabulary.itos[idx] for idx in result_caption]
 

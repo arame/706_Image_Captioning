@@ -8,12 +8,13 @@ class Hyper:
     num_layers = 1
     batch_size = 1
     dropout_rate = 0.5
-    is_grayscale = True
+    is_grayscale = False
     print_freq = 100  # print training/validation stats every __ batches
     #selected_category_names = ['bicycle']
+    selected_category_names = ['boat']
     #selected_category_names = ['horse']
     #selected_category_names = ["train"]
-    selected_category_names = ["person"]
+    #selected_category_names = ["person"]
     # See the file in the references folder for a list of categories used in Coco. Not all categories have images.
 
     [staticmethod]   
@@ -37,7 +38,7 @@ class Constants:
     load_model = False
     save_model = True
     backup_model_folder = "../backup"
-    backup_model_path = "../backup/model.pth"
+    backup_model_path = "../backup/model"
     vocab_from_file = True
     
     train_CNN = False
